@@ -1,4 +1,4 @@
-let grid = {}
+
 
 
 
@@ -9,9 +9,18 @@ document.getElementById("clear").addEventListener("click", function(){
     }
 })
 
+document.getElementById("twoPlayers").addEventListener("click", function(){
+    gameBoard = Board(firstPlayer,secondPlayer,"X",grid,2);
+    
+})
+
+document.getElementById("vsAI").addEventListener("click", function(){
+    gameBoard = Board(firstPlayer,secondPlayer,"X",grid,1);
+})
+
 // The TicTacToe factory function
 //turnFlag is a variable that contains the string spawned in each turn
-const Board = (firstPlayer,secondPlayer,turnFlag,grid) => {
+const Board = (firstPlayer,secondPlayer,turnFlag,grid,mode) => {
     const markerDraw = function(){
         if (turnFlag == "X"){
             turnFlag = "O"
@@ -22,6 +31,7 @@ const Board = (firstPlayer,secondPlayer,turnFlag,grid) => {
             return secondPlayer.getMarker();
         }
     }
+
     const winCondition = function(){
         //8 win conditions
         if (((grid[0].textContent == 'X') & (grid[1].textContent == 'X') & (grid[2].textContent == 'X')) || 
@@ -32,7 +42,6 @@ const Board = (firstPlayer,secondPlayer,turnFlag,grid) => {
             ((grid[4].textContent == 'X') & (grid[2].textContent == 'X') & (grid[6].textContent == 'X')) || 
             ((grid[4].textContent == 'X') & (grid[1].textContent == 'X') & (grid[7].textContent == 'X')) || 
             ((grid[4].textContent == 'X') & (grid[3].textContent == 'X') & (grid[5] .textContent== 'X'))){
-                console.log('monkas')
                 return "X"
         }
         if (((grid[0].textContent == 'O') & (grid[1].textContent == 'O') & (grid[2].textContent == 'O')) || 
@@ -46,7 +55,25 @@ const Board = (firstPlayer,secondPlayer,turnFlag,grid) => {
                 return "O"
         }
     }
-    return {markerDraw , winCondition}
+
+    const getMode = function(){
+        return mode;
+    }
+
+    const gameEnd = function(){
+        if (winCondition() == 'O'){
+            console.log('O wins');
+            return "end"
+            
+        }
+        if (winCondition() == 'X'){
+            console.log('X wins');
+            return "end"
+        }
+        return ""
+    }
+    
+    return {markerDraw, gameEnd, getMode}
     
 }
 
@@ -65,31 +92,30 @@ const Player = (marker,totalWins,turn) => {
     return {getMarker,getTotalWins,getTurn}
 };
 
-
+let grid = {}
+let startingMode = 0;
 grid = document.getElementsByClassName("cell");
 const firstPlayer = Player('X',0,1);
 const secondPlayer = Player('O',0,0);
+let gameBoard = Board(firstPlayer,secondPlayer,"X",grid,startingMode);
 
 
-const gameBoard = Board(firstPlayer,secondPlayer,"X",grid);
-console.log(gameBoard.markerDraw());
-console.log(typeof(firstPlayer.getMarker()))
+
+
+
+
 
 // Adding event listener to every cell of the TicTacToe board
 
-console.log(grid)
-console.log(gameBoard)
 for (i=0; i<grid.length; i++){
     grid[i].addEventListener("click",function(){
-        if (this.textContent == ""){
-            this.textContent = gameBoard.markerDraw();
+        if ((this.textContent == "") & ((gameBoard.getMode()== 1) || (gameBoard.getMode() == 2))){
+            if (gameBoard.gameEnd() == ""){ //calls the gameEnd function inside the board function
+                this.textContent = gameBoard.markerDraw();
+            }
         }
-        console.log(gameBoard.winCondition())
-        if (gameBoard.winCondition() == "X"){
-            console.log('X wins')
-        }
-        else if(gameBoard.winCondition() == "O"){
-            console.log('O wins')
+        else{
+            console.log('Choose a mode first!')
         }
     })
 }
