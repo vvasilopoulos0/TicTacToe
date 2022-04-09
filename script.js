@@ -2,19 +2,18 @@
 
 
 
-//clear button eventListener
-document.getElementById("clear").addEventListener("click", function(){
+document.getElementById("twoPlayers").addEventListener("click", function(){
     for (i=0; i<grid.length; i++){
         grid[i].textContent = "";
     }
-})
-
-document.getElementById("twoPlayers").addEventListener("click", function(){
     gameBoard = Board(firstPlayer,secondPlayer,"X",grid,2);
     
 })
 
 document.getElementById("vsAI").addEventListener("click", function(){
+    for (i=0; i<grid.length; i++){
+        grid[i].textContent = "";
+    }
     gameBoard = Board(firstPlayer,secondPlayer,"X",grid,1);
 })
 
@@ -34,6 +33,7 @@ const Board = (firstPlayer,secondPlayer,turnFlag,grid,mode) => {
 
     const winCondition = function(){
         //8 win conditions
+        let symbolCounter = 0; // counter that checks if all fields are full for tie
         if (((grid[0].textContent == 'X') & (grid[1].textContent == 'X') & (grid[2].textContent == 'X')) || 
             ((grid[0].textContent == 'X') & (grid[3].textContent == 'X') & (grid[6].textContent == 'X')) || 
             ((grid[0].textContent == 'X') & (grid[4].textContent == 'X') & (grid[8].textContent == 'X')) || 
@@ -54,6 +54,15 @@ const Board = (firstPlayer,secondPlayer,turnFlag,grid,mode) => {
             ((grid[4].textContent == 'O') & (grid[3].textContent == 'O') & (grid[5].textContent == 'O'))){
                 return "O"
         }
+        for (i=0; i<grid.length; i++){
+            if ((grid[i].textContent) != ""){
+                symbolCounter++;
+            }
+        }
+        if (symbolCounter == 9){
+            symbolCounter = 0;
+            return "Tie"
+        }
     }
 
     const getMode = function(){
@@ -62,16 +71,23 @@ const Board = (firstPlayer,secondPlayer,turnFlag,grid,mode) => {
 
     const gameEnd = function(){
         if (winCondition() == 'O'){
-            console.log('O wins');
+            alert('O wins')
             return "end"
             
         }
         if (winCondition() == 'X'){
-            console.log('X wins');
+            alert('X wins')
+            return "end"
+        }  
+        if (winCondition() == "Tie"){
+            alert("Tie")
             return "end"
         }
         return ""
     }
+
+    
+
     
     return {markerDraw, gameEnd, getMode}
     
@@ -110,12 +126,15 @@ let gameBoard = Board(firstPlayer,secondPlayer,"X",grid,startingMode);
 for (i=0; i<grid.length; i++){
     grid[i].addEventListener("click",function(){
         if ((this.textContent == "") & ((gameBoard.getMode()== 1) || (gameBoard.getMode() == 2))){
+            console.log('kek');
             if (gameBoard.gameEnd() == ""){ //calls the gameEnd function inside the board function
                 this.textContent = gameBoard.markerDraw();
+                gameBoard.gameEnd();
             }
+
         }
-        else{
-            console.log('Choose a mode first!')
+        else if (gameBoard.getMode() == 0){
+            alert('Choose a mode first!')
         }
     })
 }
