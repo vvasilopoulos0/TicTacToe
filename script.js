@@ -6,30 +6,88 @@ document.getElementById("twoPlayers").addEventListener("click", function(){
     for (i=0; i<grid.length; i++){
         grid[i].textContent = "";
     }
-    gameBoard = Board(firstPlayer,secondPlayer,"X",grid,2);
+    if ((firstPlayer.getName() == "") & (secondPlayer.getName() == "")){
+        firstPlayer.setName(window.prompt("What is your name?"))
+        secondPlayer.setName(window.prompt("What is the name of your opponent?"))
+    }
+    gameBoard = Board(firstPlayer,secondPlayer,grid,2);
+
     
 })
 
 document.getElementById("vsAI").addEventListener("click", function(){
     for (i=0; i<grid.length; i++){
         grid[i].textContent = "";
+        checkEmpty[i] = 0;
     }
-    gameBoard = Board(firstPlayer,secondPlayer,"X",grid,1);
+    gameBoard = Board(firstPlayer,secondPlayer,grid,1);
 })
 
 // The TicTacToe factory function
 //turnFlag is a variable that contains the string spawned in each turn
-const Board = (firstPlayer,secondPlayer,turnFlag,grid,mode) => {
+const Board = (firstPlayer,secondPlayer,grid,mode) => {
+
+    // used to draw the X's and O's inside the game grid
     const markerDraw = function(){
-        if (turnFlag == "X"){
+        /*if (turnFlag == "X"){
             turnFlag = "O"
             return firstPlayer.getMarker();
         }
         else{
             turnFlag = "X"
             return secondPlayer.getMarker();
+        }*/
+
+        if (firstPlayer.getTurn() == 1){
+            firstPlayer.setTurn(0);
+            secondPlayer.setTurn(1);
+            return firstPlayer.getMarker();
+        }
+        else if (secondPlayer.getTurn() == 1){
+            firstPlayer.setTurn(1);
+            secondPlayer.setTurn(0);
+            return secondPlayer.getMarker();
         }
     }
+
+    const markerDrawAI = function(checkEmpty){
+        let positions = new Array()
+        for(i=0; i <= checkEmpty.length; i++){
+            for(j=0; j <grid.length; j++){
+                if ((grid[j].textContent == 'X') & (checkEmpty[j] == 0)){
+                    positions[0] = j 
+                    break;
+                }
+            }
+            if (checkEmpty[i] == 0 ){
+                console.log('J IS' +j)
+                if (i != j){
+                    checkEmpty[i] == 1
+                    grid[i].textContent = secondPlayer.getMarker();
+                    positions[1] = i
+                    console.log(positions)
+                    return positions
+                }
+                else{
+                    console.log('kek')
+                    continue;
+                }
+                
+            } 
+        }
+    }
+
+    const setCheckEmpty = function(positions,checkEmpty){
+        checkEmpty[positions[0]] = 1;
+        checkEmpty[positions[1]] = 1;
+        return checkEmpty
+    }
+
+   
+
+    
+
+ 
 
     const winCondition = function(){
         //8 win conditions
@@ -70,17 +128,24 @@ const Board = (firstPlayer,secondPlayer,turnFlag,grid,mode) => {
     }
 
     const gameEnd = function(){
+        
         if (winCondition() == 'O'){
-            alert('O wins')
+            alert(secondPlayer.getName() + ' Won!')  
+            firstPlayer.setTurn(1);
+            secondPlayer.setTurn(0);         
             return "end"
             
         }
         if (winCondition() == 'X'){
-            alert('X wins')
+            alert(firstPlayer.getName() + ' Won!')
+            firstPlayer.setTurn(1);
+            secondPlayer.setTurn(0); 
             return "end"
         }  
         if (winCondition() == "Tie"){
-            alert("Tie")
+            alert("None won!")
+            firstPlayer.setTurn(1);
+            secondPlayer.setTurn(0); 
             return "end"
         }
         return ""
@@ -89,31 +154,47 @@ const Board = (firstPlayer,secondPlayer,turnFlag,grid,mode) => {
     
 
     
-    return {markerDraw, gameEnd, getMode}
+    return {markerDraw, markerDrawAI, gameEnd, getMode, setCheckEmpty}
     
 }
 
 // The TicTacToe player function
-const Player = (marker,totalWins,turn) => {
+const Player = (name,marker,totalWins,turn) => {
     const getMarker = function(){
         return marker;
     }
     const getTotalWins = function() {
         return totalWins;
     };
+    const setTurn = function(newTurn) {
+        turn = newTurn;
+    }
     const getTurn = function() {
         return turn;
     };
+    const getName = function(){
+        return name;
+    }
+    const setName = function(newName){
+        name = newName
+    }
+    
 
-    return {getMarker,getTotalWins,getTurn}
+    return {getMarker,getTotalWins,getTurn,setTurn,getName,setName}
 };
 
 let grid = {}
+let checkEmpty = new Array() // array that checks whether a grid cell is empty or not
 let startingMode = 0;
 grid = document.getElementsByClassName("cell");
-const firstPlayer = Player('X',0,1);
-const secondPlayer = Player('O',0,0);
-let gameBoard = Board(firstPlayer,secondPlayer,"X",grid,startingMode);
+for (i=0; i< grid.length; i++){
+   checkEmpty[i] = 0;
+}
+let firstName = ""
+let secondName = ""
+const firstPlayer = Player(firstName,'X',0,1);
+const secondPlayer = Player(secondName,'O',0,0);
+let gameBoard = Board(firstPlayer,secondPlayer,grid,startingMode);
 
 
 
@@ -125,8 +206,7 @@ let gameBoard = Board(firstPlayer,secondPlayer,"X",grid,startingMode);
 
 for (i=0; i<grid.length; i++){
     grid[i].addEventListener("click",function(){
-        if ((this.textContent == "") & ((gameBoard.getMode()== 1) || (gameBoard.getMode() == 2))){
-            console.log('kek');
+        if ((this.textContent == "") & ((gameBoard.getMode() == 2))){
             if (gameBoard.gameEnd() == ""){ //calls the gameEnd function inside the board function
                 this.textContent = gameBoard.markerDraw();
                 gameBoard.gameEnd();
@@ -135,6 +215,19 @@ for (i=0; i<grid.length; i++){
         }
         else if (gameBoard.getMode() == 0){
             alert('Choose a mode first!')
+        }
+
+        if ((this.textContent == "") & ((gameBoard.getMode() == 1))){
+            if (gameBoard.gameEnd() == ""){
+                this.textContent = 'X';
+                if (gameBoard.gameEnd() == ""){
+                    console.log('i entered')
+                    checkEmpty = gameBoard.setCheckEmpty(gameBoard.markerDrawAI(checkEmpty), checkEmpty);
+                    gameBoard.gameEnd();
+                    console.log('i left')
+                }
+                
+            }
         }
     })
 }
