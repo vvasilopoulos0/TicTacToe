@@ -10,6 +10,10 @@ document.getElementById("twoPlayers").addEventListener("click", function(){
         firstPlayer.setName(window.prompt("What is your name?"))
         secondPlayer.setName(window.prompt("What is the name of your opponent?"))
     }
+    if ((secondPlayer.getName() == "") || (secondPlayer.getName() == "Computer")){
+        secondPlayer.setName(window.prompt("What is the name of your opponent?"))
+    }
+
     gameBoard = Board(firstPlayer,secondPlayer,grid,2);
 
     
@@ -20,6 +24,13 @@ document.getElementById("vsAI").addEventListener("click", function(){
         grid[i].textContent = "";
         checkEmpty[i] = 0;
     }
+
+    if ((firstPlayer.getName() == "")){
+        firstPlayer.setName(window.prompt("What is your name?"))
+    }
+
+    secondPlayer.setName('Computer')
+
     gameBoard = Board(firstPlayer,secondPlayer,grid,1);
 })
 
@@ -69,7 +80,6 @@ const Board = (firstPlayer,secondPlayer,grid,mode) => {
                     return positions
                 }
                 else{
-                    console.log('kek')
                     continue;
                 }
                 
@@ -222,8 +232,11 @@ for (i=0; i<grid.length; i++){
                 this.textContent = 'X';
                 if (gameBoard.gameEnd() == ""){
                     console.log('i entered')
-                    checkEmpty = gameBoard.setCheckEmpty(gameBoard.markerDrawAI(checkEmpty), checkEmpty);
-                    gameBoard.gameEnd();
+                    setTimeout(()=>{            //1 sec delay before the AI plays
+                        checkEmpty = gameBoard.setCheckEmpty(gameBoard.markerDrawAI(checkEmpty), checkEmpty);
+                        gameBoard.gameEnd();
+                    },500)
+                    
                     console.log('i left')
                 }
                 
